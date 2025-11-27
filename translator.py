@@ -18,13 +18,27 @@ def _load_env_file() -> None:
     load_dotenv()
 
 
-def _build_generate_config() -> Optional[types.GenerateContentConfig]:
+def _build_generate_config(model: str) -> Optional[types.GenerateContentConfig]:
     """
-    Build the GenerateContentConfig with the thinking budget set to -1.
+    Build the GenerateContentConfig with model-specific thinking params.
 
-    The API surfaces have changed a few times; we try the documented snake_case
-    form first and fall back to camelCase if the installed version expects it.
+    The API surfaces have changed a few times; we try snake_case first and
+    fall back to camelCase if the installed version expects it.
     """
+    if model == "gemini-3-pro-preview":
+        try:
+            return types.GenerateContentConfig(
+                thinking_config=types.ThinkingConfig(level="HIGH")
+            )
+        except Exception:
+            try:
+                return types.GenerateContentConfig(
+                    thinkingConfig={"thinkingLevel": "HIGH"}
+                )
+            except Exception:
+                return None
+
+    # Default: Flash thinking budget
     try:
         return types.GenerateContentConfig(
             thinking_config=types.ThinkingConfig(budget_tokens=-1)
@@ -37,17 +51,17 @@ def _build_generate_config() -> Optional[types.GenerateContentConfig]:
 
 
 class GeminiTranslator:
-    def __init__(self, model: str = "gemini-flash-latest") -> None:
+    def __init__(self, default_model: str = "gemini-flash-latest") -> None:
         _load_env_file()
         api_key = os.environ.get("GEMINI_API_KEY")
         if not api_key:
             raise TranslationError("GEMINI_API_KEY가 설정되지 않았습니다.")
 
         self.client = genai.Client(api_key=api_key)
-        self.model = model
-        self.generate_config = _build_generate_config()
+        self.default_model = default_model
 
-    def translate(self, text: str, source: str, target: str) -> str:
+    def translate(self, text: str, source: str, target: str, model: Optional[str] = None) -> str:
+        selected_model = model or self.default_model
         contents = [
             types.Content(
                 role="user",
@@ -67,11 +81,12 @@ class GeminiTranslator:
 
         try:
             stream_kwargs = {
-                "model": self.model,
+                "model": selected_model,
                 "contents": contents,
             }
-            if self.generate_config is not None:
-                stream_kwargs["config"] = self.generate_config
+            generate_config = _build_generate_config(selected_model)
+            if generate_config is not None:
+                stream_kwargs["config"] = generate_config
 
             translated_chunks = []
             for chunk in self.client.models.generate_content_stream(**stream_kwargs):
@@ -88,5 +103,5 @@ class GeminiTranslator:
             raise TranslationError("번역 요청 중 오류가 발생했습니다.") from exc
 
 
-def create_translator(model: str = "gemini-flash-latest") -> GeminiTranslator:
-    return GeminiTranslator(model=model)
+def create_translator(default_model: str = "gemini-flash-latest") -> GeminiTranslator:
+    return GeminiTranslator(default_model=default_model)

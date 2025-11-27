@@ -57,12 +57,7 @@
     <main class="container pb-5">
       <form method="post">
         <div class="p-4 rounded-4 glass-card">
-          {% if error %}
-          <div class="alert alert-danger" role="alert">
-            {{ error }}
-          </div>
-          {% endif %}
-
+          <!-- 입력 / 출력 -->
           <div class="row g-3 mt-1">
             <div class="col-12 col-lg-6">
               <div class="mb-2">
@@ -87,9 +82,23 @@
               </div>
             </div>
           </div>
+          <!-- 에러 -->
+          {% if error %}
+          <div class="alert alert-danger" role="alert">
+            {{ error }}
+          </div>
+          {% endif %}
 
-          <div class="row mt-3">
-            <div class="col text-end">
+          <!-- 설정 -->
+          <div class="row g-3 mt-1 w-50">
+            <div class="col">
+              <select class="form-select" id="model" name="model">
+                {% for code, label in model_options %}
+                <option value="{{ code }}" {% if code == model %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col">
               <button type="submit" class="btn btn-primary px-4">
                 번역하기
               </button>
