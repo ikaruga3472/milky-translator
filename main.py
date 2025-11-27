@@ -1,3 +1,5 @@
+import os
+
 from flask import Flask, render_template, request
 
 from translator import TranslationError, create_translator
@@ -41,12 +43,16 @@ def index():
     target_language = "en"
     target_label = "English"
     model = DEFAULT_MODEL
+    api_key = ""
+    env_api_key_set = bool(os.environ.get("GEMINI_API_KEY"))
 
     if request.method == "POST":
+        error = None
         text = request.form.get("text", "").strip()
         source_language = request.form.get("source_language", source_language)
         target_language = request.form.get("target_language", target_language)
         model = request.form.get("model", model)
+        api_key = request.form.get("api_key", "").strip()
 
         if model not in dict(MODEL_OPTIONS):
             model = DEFAULT_MODEL
@@ -57,7 +63,17 @@ def index():
             error = "출발어와 도착어가 동일합니다."
         else:
             try:
-                translation = translate_text(text, source_language, target_language, model=model)
+                if api_key:
+                    custom_translator = create_translator(default_model=DEFAULT_MODEL, api_key=api_key)
+                    translation = custom_translator.translate(
+                        text,
+                        source_language,
+                        target_language,
+                        model=model,
+                        api_key_override=api_key,
+                    )
+                else:
+                    translation = translate_text(text, source_language, target_language, model=model)
             except TranslationError as exc:
                 error = str(exc)
 
@@ -74,6 +90,8 @@ def index():
         languages=LANG_OPTIONS,
         model=model,
         model_options=MODEL_OPTIONS,
+        env_api_key_set=env_api_key_set,
+        api_key=api_key,
     )
 
 

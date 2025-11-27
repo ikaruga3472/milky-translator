@@ -56,6 +56,7 @@
 
     <main class="container pb-5">
       <form method="post">
+        <input type="hidden" name="api_key" id="api_key_value" value="{{ api_key }}" />
         <div class="p-4 rounded-4 glass-card">
           <!-- 입력 / 출력 -->
           <div class="row g-3 mt-1">
@@ -89,8 +90,9 @@
           </div>
           {% endif %}
 
+
           <!-- 설정 -->
-          <div class="row g-3 mt-1 w-50">
+          <div class="row g-3 mt-1">
             <div class="col">
               <select class="form-select" id="model" name="model">
                 {% for code, label in model_options %}
@@ -98,7 +100,15 @@
                 {% endfor %}
               </select>
             </div>
-            <div class="col">
+            <div class="col-auto d-flex gap-2">
+              <button
+                type="button"
+                class="btn btn-secondary"
+                data-bs-toggle="modal"
+                data-bs-target="#apiKeyModal"
+              >
+                API 키 설정
+              </button>
               <button type="submit" class="btn btn-primary px-4">
                 번역하기
               </button>
@@ -108,10 +118,73 @@
       </form>
     </main>
 
+    <!-- API Key Modal -->
+    <div
+      class="modal fade"
+      id="apiKeyModal"
+      tabindex="-1"
+      aria-labelledby="apiKeyModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="apiKeyModalLabel">API 키 설정</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            {% if env_api_key_set %}
+            <div class="alert alert-info small" role="alert">
+              환경변수에 GEMINI_API_KEY가 지정되어 있습니다. 입력하지 않으면 기본 키가 사용됩니다.
+            </div>
+            {% endif %}
+            <input
+              type="password"
+              class="form-control"
+              id="apiKeyInput"
+              autocomplete="off"
+              placeholder="여기에 API 키를 입력하세요"
+            />
+            <div class="form-text">이 요청에만 사용되며 저장되지 않습니다.</div>
+          </div>
+          <div class="modal-footer d-flex justify-content-between">
+            <div class="d-flex gap-2">
+              <button type="button" class="btn btn-light" data-bs-dismiss="modal">취소</button>
+              <button type="button" class="btn btn-primary" id="saveApiKeyButton">적용</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <script
       src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
       integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
       crossorigin="anonymous"
     ></script>
+    <script>
+      const apiKeyHiddenField = document.getElementById("api_key_value");
+      const apiKeyInput = document.getElementById("apiKeyInput");
+      const apiKeyModalEl = document.getElementById("apiKeyModal");
+      const apiKeyModal = apiKeyModalEl ? bootstrap.Modal.getOrCreateInstance(apiKeyModalEl) : null;
+
+      document.getElementById("saveApiKeyButton")?.addEventListener("click", () => {
+        if (!apiKeyHiddenField || !apiKeyInput || !apiKeyModal) return;
+        apiKeyHiddenField.value = apiKeyInput.value.trim();
+        apiKeyModal.hide();
+      });
+
+      document.getElementById("clearApiKeyButton")?.addEventListener("click", () => {
+        if (!apiKeyHiddenField || !apiKeyInput) return;
+        apiKeyInput.value = "";
+        apiKeyHiddenField.value = "";
+      });
+
+      apiKeyModalEl?.addEventListener("shown.bs.modal", () => {
+        if (!apiKeyInput) return;
+        apiKeyInput.value = apiKeyHiddenField?.value || "";
+        apiKeyInput.focus();
+      });
+    </script>
   </body>
   </html>

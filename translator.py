@@ -51,16 +51,23 @@ def _build_generate_config(model: str) -> Optional[types.GenerateContentConfig]:
 
 
 class GeminiTranslator:
-    def __init__(self, default_model: str = "gemini-flash-latest") -> None:
+    def __init__(self, default_model: str = "gemini-flash-latest", api_key: Optional[str] = None) -> None:
         _load_env_file()
-        api_key = os.environ.get("GEMINI_API_KEY")
-        if not api_key:
+        resolved_api_key = api_key or os.environ.get("GEMINI_API_KEY")
+        if not resolved_api_key:
             raise TranslationError("GEMINI_API_KEY가 설정되지 않았습니다.")
 
-        self.client = genai.Client(api_key=api_key)
+        self.client = genai.Client(api_key=resolved_api_key)
         self.default_model = default_model
 
-    def translate(self, text: str, source: str, target: str, model: Optional[str] = None) -> str:
+    def translate(
+        self,
+        text: str,
+        source: str,
+        target: str,
+        model: Optional[str] = None,
+        api_key_override: Optional[str] = None,
+    ) -> str:
         selected_model = model or self.default_model
         contents = [
             types.Content(
@@ -80,6 +87,10 @@ class GeminiTranslator:
         ]
 
         try:
+            client = self.client
+            if api_key_override:
+                client = genai.Client(api_key=api_key_override)
+
             stream_kwargs = {
                 "model": selected_model,
                 "contents": contents,
@@ -89,7 +100,7 @@ class GeminiTranslator:
                 stream_kwargs["config"] = generate_config
 
             translated_chunks = []
-            for chunk in self.client.models.generate_content_stream(**stream_kwargs):
+            for chunk in client.models.generate_content_stream(**stream_kwargs):
                 if getattr(chunk, "text", None):
                     translated_chunks.append(chunk.text)
 
@@ -103,5 +114,5 @@ class GeminiTranslator:
             raise TranslationError("번역 요청 중 오류가 발생했습니다.") from exc
 
 
-def create_translator(default_model: str = "gemini-flash-latest") -> GeminiTranslator:
-    return GeminiTranslator(default_model=default_model)
+def create_translator(default_model: str = "gemini-flash-latest", api_key: Optional[str] = None) -> GeminiTranslator:
+    return GeminiTranslator(default_model=default_model, api_key=api_key)
