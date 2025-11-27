@@ -92,7 +92,7 @@
 
 
           <!-- 설정 -->
-          <div class="row g-3 mt-1">
+          <div class="row g-3 mt-3 align-items-center">
             <div class="col">
               <select class="form-select" id="model" name="model">
                 {% for code, label in model_options %}
@@ -103,7 +103,15 @@
             <div class="col-auto d-flex gap-2">
               <button
                 type="button"
-                class="btn btn-secondary"
+                class="btn btn-light"
+                data-bs-toggle="modal"
+                data-bs-target="#promptModal"
+              >
+                프롬프트 템플릿
+              </button>
+              <button
+                type="button"
+                class="btn btn-light"
                 data-bs-toggle="modal"
                 data-bs-target="#apiKeyModal"
               >
@@ -114,9 +122,45 @@
               </button>
             </div>
           </div>
+          <input type="hidden" id="prompt_template_value" name="prompt_template" value="{{ prompt_template }}" />
         </div>
       </form>
     </main>
+
+    <!-- Prompt Modal -->
+    <div
+      class="modal fade"
+      id="promptModal"
+      tabindex="-1"
+      aria-labelledby="promptModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="promptModalLabel">프롬프트 템플릿</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <textarea
+              class="form-control"
+              id="promptTemplateInput"
+              rows="8"
+              spellcheck="false"
+            >{{ prompt_template }}</textarea>
+            <div class="form-text mt-2">
+              {{'{{source}}'}}, {{'{{target}}'}}, {{'{{text}}'}} 필수
+            </div>
+          </div>
+          <div class="modal-footer d-flex justify-content-between">
+            <div class="d-flex gap-2">
+              <button type="button" class="btn btn-light" data-bs-dismiss="modal">닫기</button>
+              <button type="button" class="btn btn-primary" id="savePromptButton">적용</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <!-- API Key Modal -->
     <div
@@ -168,6 +212,11 @@
       const apiKeyModalEl = document.getElementById("apiKeyModal");
       const apiKeyModal = apiKeyModalEl ? bootstrap.Modal.getOrCreateInstance(apiKeyModalEl) : null;
 
+      const promptHiddenField = document.getElementById("prompt_template_value");
+      const promptInput = document.getElementById("promptTemplateInput");
+      const promptModalEl = document.getElementById("promptModal");
+      const promptModal = promptModalEl ? bootstrap.Modal.getOrCreateInstance(promptModalEl) : null;
+
       document.getElementById("saveApiKeyButton")?.addEventListener("click", () => {
         if (!apiKeyHiddenField || !apiKeyInput || !apiKeyModal) return;
         apiKeyHiddenField.value = apiKeyInput.value.trim();
@@ -184,6 +233,18 @@
         if (!apiKeyInput) return;
         apiKeyInput.value = apiKeyHiddenField?.value || "";
         apiKeyInput.focus();
+      });
+
+      document.getElementById("savePromptButton")?.addEventListener("click", () => {
+        if (!promptHiddenField || !promptInput || !promptModal) return;
+        promptHiddenField.value = promptInput.value.trim();
+        promptModal.hide();
+      });
+
+      promptModalEl?.addEventListener("shown.bs.modal", () => {
+        if (!promptInput) return;
+        promptInput.value = promptHiddenField?.value || "";
+        promptInput.focus();
       });
     </script>
   </body>

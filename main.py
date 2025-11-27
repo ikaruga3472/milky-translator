@@ -2,7 +2,7 @@ import os
 
 from flask import Flask, render_template, request
 
-from translator import TranslationError, create_translator
+from translator import DEFAULT_PROMPT_TEMPLATE, TranslationError, create_translator
 
 app = Flask(__name__)
 
@@ -26,12 +26,12 @@ except TranslationError as exc:
     translator_init_error = str(exc)
 
 
-def translate_text(text: str, source: str, target: str, model: str) -> str:
+def translate_text(text: str, source: str, target: str, model: str, prompt_template: str) -> str:
     if translator is None:
         raise TranslationError(
             translator_init_error or "번역기를 초기화하지 못했습니다. 환경변수를 확인해주세요."
         )
-    return translator.translate(text, source, target, model=model)
+    return translator.translate(text, source, target, model=model, prompt_template=prompt_template)
 
 
 @app.route("/", methods=["GET", "POST"])
@@ -44,6 +44,7 @@ def index():
     target_label = "English"
     model = DEFAULT_MODEL
     api_key = ""
+    prompt_template = DEFAULT_PROMPT_TEMPLATE
     env_api_key_set = bool(os.environ.get("GEMINI_API_KEY"))
 
     if request.method == "POST":
@@ -53,6 +54,7 @@ def index():
         target_language = request.form.get("target_language", target_language)
         model = request.form.get("model", model)
         api_key = request.form.get("api_key", "").strip()
+        prompt_template = request.form.get("prompt_template", "").strip() or DEFAULT_PROMPT_TEMPLATE
 
         if model not in dict(MODEL_OPTIONS):
             model = DEFAULT_MODEL
@@ -71,9 +73,16 @@ def index():
                         target_language,
                         model=model,
                         api_key_override=api_key,
+                        prompt_template=prompt_template,
                     )
                 else:
-                    translation = translate_text(text, source_language, target_language, model=model)
+                    translation = translate_text(
+                        text,
+                        source_language,
+                        target_language,
+                        model=model,
+                        prompt_template=prompt_template,
+                    )
             except TranslationError as exc:
                 error = str(exc)
 
@@ -92,6 +101,7 @@ def index():
         model_options=MODEL_OPTIONS,
         env_api_key_set=env_api_key_set,
         api_key=api_key,
+        prompt_template=prompt_template,
     )
 
 

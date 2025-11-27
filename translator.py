@@ -5,6 +5,14 @@ from google import genai
 from google.genai import types
 
 
+DEFAULT_PROMPT_TEMPLATE = (
+    "You are a translation engine. Translate the user text precisely without adding explanations.\n"
+    "Source language: {{source}}\n"
+    "Target language: {{target}}\n"
+    "Text:\n{{text}}"
+)
+
+
 class TranslationError(Exception):
     """Raised when translation fails or configuration is missing."""
 
@@ -50,6 +58,23 @@ def _build_generate_config(model: str) -> Optional[types.GenerateContentConfig]:
             return None
 
 
+def _format_prompt(
+    template: Optional[str],
+    *,
+    source: str,
+    target: str,
+    text: str,
+) -> str:
+    """Fill the prompt template with user text and language settings."""
+    resolved = template or DEFAULT_PROMPT_TEMPLATE
+    return (
+        resolved.replace("{{source}}", source)
+        .replace("{{target}}", target)
+        .replace("{{text}}", text)
+        .strip()
+    )
+
+
 class GeminiTranslator:
     def __init__(self, default_model: str = "gemini-flash-latest", api_key: Optional[str] = None) -> None:
         _load_env_file()
@@ -67,20 +92,21 @@ class GeminiTranslator:
         target: str,
         model: Optional[str] = None,
         api_key_override: Optional[str] = None,
+        prompt_template: Optional[str] = None,
     ) -> str:
         selected_model = model or self.default_model
+        prompt = _format_prompt(
+            prompt_template,
+            source=source,
+            target=target,
+            text=text,
+        )
         contents = [
             types.Content(
                 role="user",
                 parts=[
                     types.Part.from_text(
-                        text=(
-                            "You are a translation engine. "
-                            "Translate the user text precisely without adding explanations. "
-                            f"Source language: {source}\n"
-                            f"Target language: {target}\n\n"
-                            f"Text:\n{text}"
-                        )
+                        text=prompt
                     )
                 ],
             ),
