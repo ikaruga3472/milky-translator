@@ -60,7 +60,7 @@ def index():
             model = DEFAULT_MODEL
 
         if not text:
-            error = "번역할 문장을 입력해주세요."
+            error = "번역할 내용을 입력해주세요."
         elif source_language == target_language:
             error = "출발어와 도착어가 동일합니다."
         else:

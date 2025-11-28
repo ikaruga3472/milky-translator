@@ -55,7 +55,7 @@
     </nav>
 
     <main class="container pb-5">
-      <form method="post">
+      <form method="post" id="form">
         <input type="hidden" name="api_key" id="api_key_value" value="{{ api_key }}" />
         <div class="p-4 rounded-4 glass-card">
           <!-- 입력 / 출력 -->
@@ -117,7 +117,7 @@
               >
                 API 키 설정
               </button>
-              <button type="submit" class="btn btn-primary px-4">
+              <button type="submit" class="btn btn-primary px-4" id="transrate-btn">
                 번역하기
               </button>
             </div>
@@ -217,6 +217,14 @@
       const promptModalEl = document.getElementById("promptModal");
       const promptModal = promptModalEl ? bootstrap.Modal.getOrCreateInstance(promptModalEl) : null;
 
+      const translateButton = document.getElementById("transrate-btn");
+
+      document.getElementById("form").addEventListener("submit", () => {
+        if (!promptHiddenField || !promptInput) return;
+        translateButton.disabled = true;
+        translateButton.innerText = "번역 중...";
+      });
+
       document.getElementById("saveApiKeyButton")?.addEventListener("click", () => {
         if (!apiKeyHiddenField || !apiKeyInput || !apiKeyModal) return;
         apiKeyHiddenField.value = apiKeyInput.value.trim();
@@ -246,6 +254,8 @@
         promptInput.value = promptHiddenField?.value || "";
         promptInput.focus();
       });
+
+
     </script>
   </body>
   </html>
