@@ -5,11 +5,24 @@ from google import genai
 from google.genai import types
 
 
-DEFAULT_PROMPT_TEMPLATE = (
-    "You are a translation engine. Translate the user text precisely without adding explanations.\n"
-    "Source language: {{source}}\n"
-    "Target language: {{target}}\n"
-    "Text:\n{{text}}"
+DEFAULT_PROMPT_TEMPLATE = ('''# Role
+You are a professional translator.
+
+# Task
+Translate the following text from {{source}} into {{target}}.
+
+# Constraints
+1. **Accuracy**: Preserve the original meaning and nuance accurately.
+2. **No Fluff**: Output ONLY the translated text. Do not include notes, explanations, or conversational fillers (e.g., "Here is the translation").
+
+# Input Data
+- Source Language: {{source}}
+- Target Language: {{target}}
+- Text to Translate:
+"""
+{{text}}
+"""
+'''
 )
 
 
