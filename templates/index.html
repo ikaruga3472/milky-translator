@@ -118,7 +118,13 @@
                 {% endfor %}
               </select>
             </div>
-            <div class="col-auto d-flex gap-2">
+            <div class="col-auto d-flex gap-2 align-items-center">
+              <input
+                type="checkbox"
+                class="form-check-input"
+                id="text-wrap-checkbox"
+              />
+              <label class="form-check-label" for="text-wrap-checkbox">줄바꿈</label>
               <button
                 type="button"
                 class="btn btn-light"
@@ -232,6 +238,16 @@
       const promptModal = promptModalEl ? bootstrap.Modal.getOrCreateInstance(promptModalEl) : null;
 
       const translateButton = document.getElementById("transrate-btn");
+
+      // 줄바꿈 버튼 기능
+      document.getElementById("text-wrap-checkbox").addEventListener("change", (event) => {
+        const output = document.getElementById("translationOutput");
+        if (event.target.checked) {
+          output.style.whiteSpace = "pre-wrap";
+        } else {
+          output.style.whiteSpace = "pre";
+        }
+      });
 
       document.getElementById("form").addEventListener("submit", () => {
         if (!promptHiddenField || !promptInput) return;
