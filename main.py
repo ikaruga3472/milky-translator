@@ -1,6 +1,6 @@
 import os
 
-from flask import Flask, render_template, request
+from flask import Flask, jsonify, render_template, request
 
 from translator import DEFAULT_PROMPT_TEMPLATE, TranslationError, create_translator
 
@@ -103,6 +103,11 @@ def index():
         api_key=api_key,
         prompt_template=prompt_template,
     )
+
+
+@app.get("/prompt-template")
+def prompt_template_api():
+    return jsonify({"prompt_template": DEFAULT_PROMPT_TEMPLATE})
 
 
 if __name__ == "__main__":

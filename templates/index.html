@@ -236,8 +236,57 @@
       const promptInput = document.getElementById("promptTemplateInput");
       const promptModalEl = document.getElementById("promptModal");
       const promptModal = promptModalEl ? bootstrap.Modal.getOrCreateInstance(promptModalEl) : null;
+      const PROMPT_STORAGE_KEY = "milkyTranslator.promptTemplate";
 
       const translateButton = document.getElementById("transrate-btn");
+
+      const setPromptTemplateValue = (value) => {
+        if (promptHiddenField) {
+          promptHiddenField.value = value;
+        }
+        if (promptInput) {
+          promptInput.value = value;
+        }
+      };
+
+      const getCachedPromptTemplate = () => {
+        try {
+          return localStorage.getItem(PROMPT_STORAGE_KEY);
+        } catch (error) {
+          return null;
+        }
+      };
+
+      const savePromptTemplateToCache = (value) => {
+        try {
+          localStorage.setItem(PROMPT_STORAGE_KEY, value);
+        } catch (error) {}
+      };
+
+      const loadPromptTemplate = async () => {
+        if (!promptHiddenField) return;
+
+        const cachedPrompt = getCachedPromptTemplate();
+        if (cachedPrompt) {
+          setPromptTemplateValue(cachedPrompt);
+          return;
+        }
+
+        try {
+          const response = await fetch("/prompt-template");
+          if (!response.ok) throw new Error("Failed to load prompt template");
+          const data = await response.json();
+          const serverPrompt = data?.prompt_template || promptHiddenField.value;
+          setPromptTemplateValue(serverPrompt);
+          savePromptTemplateToCache(serverPrompt);
+        } catch (error) {
+          // Keep whatever server rendered if fetch/localStorage is unavailable
+          setPromptTemplateValue(promptHiddenField.value);
+          savePromptTemplateToCache(promptHiddenField.value);
+        }
+      };
+
+      loadPromptTemplate();
 
       // 줄바꿈 버튼 기능
       document.getElementById("text-wrap-checkbox").addEventListener("change", (event) => {
@@ -275,7 +324,9 @@
 
       document.getElementById("savePromptButton")?.addEventListener("click", () => {
         if (!promptHiddenField || !promptInput || !promptModal) return;
-        promptHiddenField.value = promptInput.value.trim();
+        const nextPrompt = promptInput.value.trim();
+        setPromptTemplateValue(nextPrompt);
+        savePromptTemplateToCache(nextPrompt);
         promptModal.hide();
       });
 
