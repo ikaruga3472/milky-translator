@@ -289,13 +289,39 @@
       loadPromptTemplate();
 
       // 줄바꿈 버튼 기능
-      document.getElementById("text-wrap-checkbox").addEventListener("change", (event) => {
+      const textWrapCheckbox = document.getElementById("text-wrap-checkbox");
+      const TEXT_WRAP_STORAGE_KEY = "milkyTranslator.textWrap";
+
+      // pre 요소에 줄바꿈 스타일 적용
+      const applyTextWrap = (checked) => {
         const output = document.getElementById("translationOutput");
-        if (event.target.checked) {
-          output.style.whiteSpace = "pre-wrap";
-        } else {
-          output.style.whiteSpace = "pre";
-        }
+        if (!output) return;
+        output.style.whiteSpace = checked ? "pre-wrap" : "pre";
+      };
+
+      // 저장된 줄바꿈 설정 불러오기
+      const loadTextWrapPreference = () => {
+        try {
+          const saved = localStorage.getItem(TEXT_WRAP_STORAGE_KEY);
+          if (saved === null) return;
+
+          const isChecked = saved === "true";
+          if (textWrapCheckbox) {
+            textWrapCheckbox.checked = isChecked;
+          }
+          applyTextWrap(isChecked);
+        } catch (error) {}
+      };
+
+      loadTextWrapPreference();
+      
+      // 체크박스 리스너 등록
+      textWrapCheckbox?.addEventListener("change", (event) => {
+        const isChecked = Boolean(event.target.checked);
+        applyTextWrap(isChecked);
+        try {
+          localStorage.setItem(TEXT_WRAP_STORAGE_KEY, String(isChecked));
+        } catch (error) {}
       });
 
       document.getElementById("form").addEventListener("submit", () => {
