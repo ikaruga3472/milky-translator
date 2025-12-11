@@ -47,6 +47,16 @@
       .pill {
         border-radius: 999px;
       }
+      .auth-overlay {
+        position: fixed;
+        inset: 0;
+        background: radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.8), rgba(229, 240, 255, 0.85));
+        backdrop-filter: blur(6px);
+        z-index: 2000;
+      }
+      .auth-card {
+        width: min(420px, 92vw);
+      }
     </style>
   </head>
   <body>
@@ -405,7 +415,6 @@
           }
         });
       }
-
     </script>
   </body>
   </html>
