@@ -38,7 +38,7 @@ def _load_env_file() -> None:
         return
     load_dotenv()
 
-
+# 설정 만들어줘
 def _build_generate_config(model: str) -> Optional[types.GenerateContentConfig]:
     """
     Build the GenerateContentConfig with model-specific thinking params.
@@ -46,7 +46,7 @@ def _build_generate_config(model: str) -> Optional[types.GenerateContentConfig]:
     The API surfaces have changed a few times; we try snake_case first and
     fall back to camelCase if the installed version expects it.
     """
-    if model == "gemini-3-pro-preview":
+    if model == "gemini-3-pro-preview" or model == 'gemini-3-flash-preview':
         try:
             return types.GenerateContentConfig(
                 thinking_config=types.ThinkingConfig(level="HIGH")
@@ -87,7 +87,7 @@ def _format_prompt(
         .strip()
     )
 
-
+# 실제 번역기
 class GeminiTranslator:
     def __init__(self, default_model: str = "gemini-flash-latest", api_key: Optional[str] = None) -> None:
         _load_env_file()
@@ -98,6 +98,7 @@ class GeminiTranslator:
         self.client = genai.Client(api_key=resolved_api_key)
         self.default_model = default_model
 
+    # 번역
     def translate(
         self,
         text: str,

@@ -20,8 +20,9 @@ LANG_OPTIONS = [
 ]
 
 MODEL_OPTIONS = [
-    ("gemini-flash-latest", "gemini-flash-latest"),
+    ("gemini-3-flash-preview", "gemini-3-flash-preview (NEW)"),
     ("gemini-3-pro-preview", "gemini-3-pro-preview"),
+    ("gemini-flash-latest", "gemini-flash-latest"),
 ]
 DEFAULT_MODEL = MODEL_OPTIONS[0][0]
 
