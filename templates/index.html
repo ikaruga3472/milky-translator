@@ -126,7 +126,7 @@
               </select>
               <select class="form-select" id="select-thinking-level" name="level">
                 {% for code, label in thinking_level_options %}
-                <option value="{{ code }}" {% if code == default_level %}selected{% endif %}>{{ label }}</option>
+                <option value="{{ code }}" {% if code == level %}selected{% endif %}>{{ label }}</option>
                 {% endfor %}
               </select>
             </div>

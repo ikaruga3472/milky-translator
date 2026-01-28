@@ -26,12 +26,13 @@ MODEL_OPTIONS = [
     ("gemini-flash-latest", "gemini-flash-latest"),
 ]
 
-THINKING_LEVEL = [
+THINKING_LEVEL_OPTIONS = [
     ("minimal", "MInimal"),
     ("low", "Low"),
     ("high", "High"),
 ]
 DEFAULT_MODEL = MODEL_OPTIONS[0][0]
+DEFAULT_LEVEL = THINKING_LEVEL_OPTIONS[0][0]
 
 translator = None
 translator_init_error = None
@@ -111,7 +112,7 @@ def index():
     target_language = "en"
     target_label = "English"
     model = DEFAULT_MODEL
-    level = "low"
+    level = DEFAULT_LEVEL
     api_key = ""
     prompt_template = DEFAULT_PROMPT_TEMPLATE
     env_api_key_set = bool(os.environ.get("GEMINI_API_KEY"))
@@ -178,7 +179,7 @@ def index():
         model=model,
         level=level,
         model_options=MODEL_OPTIONS,
-        thinking_level_options=THINKING_LEVEL,
+        thinking_level_options=THINKING_LEVEL_OPTIONS,
         env_api_key_set=env_api_key_set,
         api_key=api_key,
         prompt_template=prompt_template,
