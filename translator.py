@@ -38,37 +38,13 @@ def _load_env_file() -> None:
         return
     load_dotenv()
 
-# 설정 만들어줘
-def _build_generate_config(model: str) -> Optional[types.GenerateContentConfig]:
-    """
-    Build the GenerateContentConfig with model-specific thinking params.
 
-    The API surfaces have changed a few times; we try snake_case first and
-    fall back to camelCase if the installed version expects it.
-    """
+def _build_generate_config(model: str, level: str) -> Optional[types.GenerateContentConfig]:
     if model == "gemini-3-pro-preview" or model == 'gemini-3-flash-preview':
-        try:
-            return types.GenerateContentConfig(
-                thinking_config=types.ThinkingConfig(level="HIGH")
-            )
-        except Exception:
-            try:
-                return types.GenerateContentConfig(
-                    thinkingConfig={"thinkingLevel": "HIGH"}
-                )
-            except Exception:
-                return None
-
-    # Default: Flash thinking budget
-    try:
         return types.GenerateContentConfig(
-            thinking_config=types.ThinkingConfig(budget_tokens=-1)
+            thinking_config=types.ThinkingConfig(thinking_level=level, thinking_budget=-1),
         )
-    except Exception:
-        try:
-            return types.GenerateContentConfig(thinkingConfig={"thinkingBudget": -1})
-        except Exception:
-            return None
+
 
 
 def _format_prompt(
@@ -87,7 +63,7 @@ def _format_prompt(
         .strip()
     )
 
-# 실제 번역기
+
 class GeminiTranslator:
     def __init__(self, default_model: str = "gemini-flash-latest", api_key: Optional[str] = None) -> None:
         _load_env_file()
@@ -105,6 +81,7 @@ class GeminiTranslator:
         source: str,
         target: str,
         model: Optional[str] = None,
+        level: Optional[str] = None,
         api_key_override: Optional[str] = None,
         prompt_template: Optional[str] = None,
     ) -> str:
@@ -115,36 +92,20 @@ class GeminiTranslator:
             target=target,
             text=text,
         )
-        contents = [
-            types.Content(
-                role="user",
-                parts=[
-                    types.Part.from_text(
-                        text=prompt
-                    )
-                ],
-            ),
-        ]
 
         try:
             client = self.client
             if api_key_override:
                 client = genai.Client(api_key=api_key_override)
 
-            stream_kwargs = {
-                "model": selected_model,
-                "contents": contents,
-            }
-            generate_config = _build_generate_config(selected_model)
-            if generate_config is not None:
-                stream_kwargs["config"] = generate_config
+            generate_config = _build_generate_config(selected_model, level)
 
-            translated_chunks = []
-            for chunk in client.models.generate_content_stream(**stream_kwargs):
-                if getattr(chunk, "text", None):
-                    translated_chunks.append(chunk.text)
+            translated_text = client.models.generate_content(
+                model=selected_model,
+                prompt=prompt,
+                config=generate_config
+            )
 
-            translated_text = "".join(translated_chunks).strip()
             if not translated_text:
                 raise TranslationError("번역 결과가 비어 있습니다.")
             return translated_text

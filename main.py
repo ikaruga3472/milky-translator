@@ -17,12 +17,18 @@ LANG_OPTIONS = [
     ("ko", "한국어"),
     ("en", "English"),
     ("ja", "日本語"),
+    ("ch", "中國語"),
 ]
 
 MODEL_OPTIONS = [
     ("gemini-3-flash-preview", "gemini-3-flash-preview (NEW)"),
-    ("gemini-3-pro-preview", "gemini-3-pro-preview"),
+    ("gemini-3-pro-preview", "gemini-3-pro-preview (NEW)"),
     ("gemini-flash-latest", "gemini-flash-latest"),
+]
+
+THINKING_LEVEL = [
+    ("low", "Low"),
+    ("high", "High"),
 ]
 DEFAULT_MODEL = MODEL_OPTIONS[0][0]
 
@@ -85,12 +91,12 @@ def login():
     )
 
 
-def translate_text(text: str, source: str, target: str, model: str, prompt_template: str) -> str:
+def translate_text(text: str, source: str, target: str, model: str, level: str, prompt_template: str) -> str:
     if translator is None:
         raise TranslationError(
             translator_init_error or "번역기를 초기화하지 못했습니다. 환경변수를 확인해주세요."
         )
-    return translator.translate(text, source, target, model=model, prompt_template=prompt_template)
+    return translator.translate(text, source, target, model=model, level=level, prompt_template=prompt_template)
 
 
 @app.route("/", methods=["GET", "POST"])
@@ -104,6 +110,7 @@ def index():
     target_language = "en"
     target_label = "English"
     model = DEFAULT_MODEL
+    default_level = "low"
     api_key = ""
     prompt_template = DEFAULT_PROMPT_TEMPLATE
     env_api_key_set = bool(os.environ.get("GEMINI_API_KEY"))
@@ -117,6 +124,7 @@ def index():
         source_language = request.form.get("source_language", source_language)
         target_language = request.form.get("target_language", target_language)
         model = request.form.get("model", model)
+        level = request.form.get("level", default_level)
         api_key = request.form.get("api_key", "").strip()
         prompt_template = request.form.get("prompt_template", "").strip() or DEFAULT_PROMPT_TEMPLATE
 
@@ -136,6 +144,7 @@ def index():
                         source_language,
                         target_language,
                         model=model,
+                        level=level,
                         api_key_override=api_key,
                         prompt_template=prompt_template,
                     )
@@ -145,6 +154,7 @@ def index():
                         source_language,
                         target_language,
                         model=model,
+                        level=level,
                         prompt_template=prompt_template,
                     )
             except TranslationError as exc:
@@ -163,6 +173,7 @@ def index():
         languages=LANG_OPTIONS,
         model=model,
         model_options=MODEL_OPTIONS,
+        thinking_level_options=THINKING_LEVEL,
         env_api_key_set=env_api_key_set,
         api_key=api_key,
         prompt_template=prompt_template,

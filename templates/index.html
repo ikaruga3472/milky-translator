@@ -70,7 +70,6 @@
       <form method="post" id="form">
         <input type="hidden" name="api_key" id="api_key_value" value="{{ api_key }}" />
         <div class="p-4 rounded-4 glass-card">
-          <!-- 입력 / 출력 -->
           <div class="row g-3 mt-1">
             <div class="col-12 col-lg-6">
               <div class="d-flex align-items-center gap-2 mb-2">
@@ -111,21 +110,23 @@
               </div>
             </div>
           </div>
-          <!-- 에러 -->
+
           {% if error %}
           <div class="alert alert-danger" role="alert">
             {{ error }}
           </div>
           {% endif %}
 
-
-          <!-- 설정 -->
           <div class="row g-3 mt-3 align-items-center">
             <div class="col">
-              <!-- 모델 선택 -->
               <select class="form-select" id="model" name="model">
                 {% for code, label in model_options %}
                 <option value="{{ code }}" {% if code == model %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+              </select>
+              <select class="form-select" id="select-thinking-level" name="level">
+                {% for code, label in thinking_level_options %}
+                <option value="{{ code }}" {% if code == default_level %}selected{% endif %}>{{ label }}</option>
                 {% endfor %}
               </select>
             </div>
@@ -162,7 +163,6 @@
       </form>
     </main>
 
-    <!-- Prompt Modal -->
     <div
       class="modal fade"
       id="promptModal"
@@ -197,7 +197,6 @@
       </div>
     </div>
 
-    <!-- API Key Modal -->
     <div
       class="modal fade"
       id="apiKeyModal"
