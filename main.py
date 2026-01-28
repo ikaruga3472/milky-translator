@@ -111,7 +111,7 @@ def index():
     target_language = "en"
     target_label = "English"
     model = DEFAULT_MODEL
-    default_level = "low"
+    level = "low"
     api_key = ""
     prompt_template = DEFAULT_PROMPT_TEMPLATE
     env_api_key_set = bool(os.environ.get("GEMINI_API_KEY"))
@@ -125,7 +125,7 @@ def index():
         source_language = request.form.get("source_language", source_language)
         target_language = request.form.get("target_language", target_language)
         model = request.form.get("model", model)
-        level = request.form.get("level", default_level)
+        level = request.form.get("level", level)
         api_key = request.form.get("api_key", "").strip()
         prompt_template = request.form.get("prompt_template", "").strip() or DEFAULT_PROMPT_TEMPLATE
 
