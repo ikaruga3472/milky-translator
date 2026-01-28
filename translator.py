@@ -42,7 +42,11 @@ def _load_env_file() -> None:
 def _build_generate_config(model: str, level: str) -> Optional[types.GenerateContentConfig]:
     if model == "gemini-3-pro-preview" or model == 'gemini-3-flash-preview':
         return types.GenerateContentConfig(
-            thinking_config=types.ThinkingConfig(thinking_level=level, thinking_budget=-1),
+            thinking_config=types.ThinkingConfig(thinking_level=level),
+        )
+    else:
+        return types.GenerateContentConfig(
+            thinking_config=types.ThinkingConfig(thinking_budget=-1),
         )
 
 
