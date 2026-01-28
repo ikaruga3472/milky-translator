@@ -72,8 +72,8 @@
         <div class="p-4 rounded-4 glass-card">
           <div class="row g-3 mt-1">
             <div class="col-12 col-lg-6">
-              <div class="d-flex align-items-center gap-2 mb-2">
-                <select class="form-select" id="source_language" name="source_language">
+              <div class="d-flex align-items-center justify-content-between gap-2 mb-2">
+                <select class="w-50 form-select" id="source_language" name="source_language">
                   {% for code, label in languages %}
                   <option value="{{ code }}" {% if code == source_language %}selected{% endif %}>{{ label }}</option>
                   {% endfor %}
@@ -90,8 +90,8 @@
               <textarea class="form-control" id="text" name="text" rows="10" placeholder="번역할 내용">{{ text }}</textarea>
             </div>
             <div class="col-12 col-lg-6">
-              <div class="d-flex align-items-center gap-2 mb-2">
-                <select class="form-select flex-grow-1" id="target_language" name="target_language">
+              <div class="d-flex align-items-center justify-content-between gap-2 mb-2">
+                <select class="w-50 form-select" id="target_language" name="target_language">
                   {% for code, label in languages %}
                   <option value="{{ code }}" {% if code == target_language %}selected{% endif %}>{{ label }}</option>
                   {% endfor %}
@@ -118,18 +118,23 @@
           {% endif %}
 
           <div class="row g-3 mt-3 align-items-center">
-            <div class="col">
-              <select class="form-select" id="model" name="model">
-                {% for code, label in model_options %}
-                <option value="{{ code }}" {% if code == model %}selected{% endif %}>{{ label }}</option>
-                {% endfor %}
-              </select>
-              <select class="form-select" id="select-thinking-level" name="level">
-                {% for code, label in thinking_level_options %}
-                <option value="{{ code }}" {% if code == level %}selected{% endif %}>{{ label }}</option>
-                {% endfor %}
-              </select>
-            </div>
+
+              <div class="col input-group mb-2">
+                <label class="input-group-text" for="model">모델</label>
+                <select class="form-select" id="model" name="model">
+                  {% for code, label in model_options %}
+                  <option value="{{ code }}" {% if code == model %}selected{% endif %}>{{ label }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="col input-group mb-2">
+                <label class="input-group-text" for="select-thinking-level">사고 수준</label>
+                <select class="form-select" id="select-thinking-level" name="level">
+                  {% for code, label in thinking_level_options %}
+                  <option value="{{ code }}" {% if code == level %}selected{% endif %}>{{ label }}</option>
+                  {% endfor %}
+                </select>
+              </div>
             <div class="col-auto d-flex gap-2 align-items-center">
               <input
                 type="checkbox"
