@@ -109,10 +109,11 @@ class GeminiTranslator:
                 contents=prompt,
                 config=generate_config
             )
+            print(f'[DEBUG] Model: {selected_model}, Thinking Config: {generate_config.thinking_config}')
 
             if not translated_text:
                 raise TranslationError("번역 결과가 비어 있습니다.")
-            return translated_text
+            return translated_text.text
         except TranslationError:
             raise
         except Exception as exc:

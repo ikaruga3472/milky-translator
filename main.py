@@ -27,6 +27,7 @@ MODEL_OPTIONS = [
 ]
 
 THINKING_LEVEL = [
+    ("minimal", "MInimal"),
     ("low", "Low"),
     ("high", "High"),
 ]
@@ -135,6 +136,9 @@ def index():
             error = "번역할 내용을 입력해주세요."
         elif source_language == target_language:
             error = "출발어와 도착어가 동일합니다."
+        elif level == "minimal" and model == "gemini-3-pro-preview":
+            error = "Gemini 3 Pro 모델은 Minimal을 지원하지 않습니다."
+
         else:
             try:
                 if api_key:
@@ -172,6 +176,7 @@ def index():
         target_label=target_label,
         languages=LANG_OPTIONS,
         model=model,
+        level=level,
         model_options=MODEL_OPTIONS,
         thinking_level_options=THINKING_LEVEL,
         env_api_key_set=env_api_key_set,
