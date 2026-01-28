@@ -102,7 +102,7 @@ class GeminiTranslator:
 
             translated_text = client.models.generate_content(
                 model=selected_model,
-                prompt=prompt,
+                contents=prompt,
                 config=generate_config
             )
 
@@ -112,6 +112,7 @@ class GeminiTranslator:
         except TranslationError:
             raise
         except Exception as exc:
+            print(exc)
             raise TranslationError("번역 요청 중 오류가 발생했습니다.") from exc
 
 
