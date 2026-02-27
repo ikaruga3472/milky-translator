@@ -69,7 +69,7 @@ def _format_prompt(
 
 
 class GeminiTranslator:
-    def __init__(self, default_model: str = "gemini-flash-latest", api_key: Optional[str] = None) -> None:
+    def __init__(self, default_model: str = "gemini-2.5-flash", api_key: Optional[str] = None) -> None:
         _load_env_file()
         resolved_api_key = api_key or os.environ.get("GEMINI_API_KEY")
         if not resolved_api_key:
@@ -121,5 +121,5 @@ class GeminiTranslator:
             raise TranslationError("번역 요청 중 오류가 발생했습니다.") from exc
 
 
-def create_translator(default_model: str = "gemini-flash-latest", api_key: Optional[str] = None) -> GeminiTranslator:
+def create_translator(default_model: str = "gemini-2.5-flash", api_key: Optional[str] = None) -> GeminiTranslator:
     return GeminiTranslator(default_model=default_model, api_key=api_key)

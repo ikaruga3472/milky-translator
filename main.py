@@ -23,7 +23,7 @@ LANG_OPTIONS = [
 MODEL_OPTIONS = [
     ("gemini-3-flash-preview", "gemini-3-flash-preview (NEW)"),
     ("gemini-3-pro-preview", "gemini-3-pro-preview (NEW)"),
-    ("gemini-flash-latest", "gemini-flash-latest"),
+    ("gemini-2.5-flash", "gemini-2.5-flash"),
 ]
 
 THINKING_LEVEL_OPTIONS = [
