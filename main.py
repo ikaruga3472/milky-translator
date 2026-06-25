@@ -113,9 +113,7 @@ def index():
     target_label = "English"
     model = DEFAULT_MODEL
     level = DEFAULT_LEVEL
-    api_key = ""
     prompt_template = DEFAULT_PROMPT_TEMPLATE
-    env_api_key_set = bool(os.environ.get("GEMINI_API_KEY"))
 
     if password_required and not password_authenticated:
         return redirect(url_for("login"))
@@ -127,7 +125,6 @@ def index():
         target_language = request.form.get("target_language", target_language)
         model = request.form.get("model", model)
         level = request.form.get("level", level)
-        api_key = request.form.get("api_key", "").strip()
         prompt_template = request.form.get("prompt_template", "").strip() or DEFAULT_PROMPT_TEMPLATE
 
         if model not in dict(MODEL_OPTIONS):
@@ -142,26 +139,14 @@ def index():
 
         else:
             try:
-                if api_key:
-                    custom_translator = create_translator(default_model=DEFAULT_MODEL, api_key=api_key)
-                    translation = custom_translator.translate(
-                        text,
-                        source_language,
-                        target_language,
-                        model=model,
-                        level=level,
-                        api_key_override=api_key,
-                        prompt_template=prompt_template,
-                    )
-                else:
-                    translation = translate_text(
-                        text,
-                        source_language,
-                        target_language,
-                        model=model,
-                        level=level,
-                        prompt_template=prompt_template,
-                    )
+                translation = translate_text(
+                    text,
+                    source_language,
+                    target_language,
+                    model=model,
+                    level=level,
+                    prompt_template=prompt_template,
+                )
             except TranslationError as exc:
                 error = str(exc)
 
@@ -180,8 +165,6 @@ def index():
         level=level,
         model_options=MODEL_OPTIONS,
         thinking_level_options=THINKING_LEVEL_OPTIONS,
-        env_api_key_set=env_api_key_set,
-        api_key=api_key,
         prompt_template=prompt_template,
         password_required=password_required,
     )

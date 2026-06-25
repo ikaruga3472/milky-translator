@@ -1,4 +1,5 @@
 .env
+docs/
 
 # Python-generated files
 __pycache__/

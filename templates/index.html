@@ -68,7 +68,6 @@
 
     <main class="container pb-5">
       <form method="post" id="form">
-        <input type="hidden" name="api_key" id="api_key_value" value="{{ api_key }}" />
         <div class="p-4 rounded-4 glass-card">
           <div class="row g-3 mt-1">
             <div class="col-12 col-lg-6">
@@ -150,14 +149,6 @@
               >
                 프롬프트 템플릿
               </button>
-              <button
-                type="button"
-                class="btn btn-light"
-                data-bs-toggle="modal"
-                data-bs-target="#apiKeyModal"
-              >
-                API 키 설정
-              </button>
               <button type="submit" class="btn btn-primary px-4" id="transrate-btn">
                 번역하기
               </button>
@@ -202,51 +193,8 @@
       </div>
     </div>
 
-    <div
-      class="modal fade"
-      id="apiKeyModal"
-      tabindex="-1"
-      aria-labelledby="apiKeyModalLabel"
-      aria-hidden="true"
-    >
-      <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="apiKeyModalLabel">API 키 설정</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body">
-            {% if env_api_key_set %}
-            <div class="alert alert-info small" role="alert">
-              환경변수에 GEMINI_API_KEY가 지정되어 있습니다. 입력하지 않으면 기본 키가 사용됩니다.
-            </div>
-            {% endif %}
-            <input
-              type="password"
-              class="form-control"
-              id="apiKeyInput"
-              autocomplete="off"
-              placeholder="여기에 API 키를 입력하세요"
-            />
-            <div class="form-text">이 요청에만 사용되며 저장되지 않습니다.</div>
-          </div>
-          <div class="modal-footer d-flex justify-content-between">
-            <div class="d-flex gap-2">
-              <button type="button" class="btn btn-light" data-bs-dismiss="modal">취소</button>
-              <button type="button" class="btn btn-primary" id="saveApiKeyButton">적용</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
     <script>
-      const apiKeyHiddenField = document.getElementById("api_key_value");
-      const apiKeyInput = document.getElementById("apiKeyInput");
-      const apiKeyModalEl = document.getElementById("apiKeyModal");
-      const apiKeyModal = apiKeyModalEl ? bootstrap.Modal.getOrCreateInstance(apiKeyModalEl) : null;
-
       const promptHiddenField = document.getElementById("prompt_template_value");
       const promptInput = document.getElementById("promptTemplateInput");
       const promptModalEl = document.getElementById("promptModal");
@@ -343,24 +291,6 @@
         if (!promptHiddenField || !promptInput) return;
         translateButton.disabled = true;
         translateButton.innerText = "번역 중...";
-      });
-
-      document.getElementById("saveApiKeyButton")?.addEventListener("click", () => {
-        if (!apiKeyHiddenField || !apiKeyInput || !apiKeyModal) return;
-        apiKeyHiddenField.value = apiKeyInput.value.trim();
-        apiKeyModal.hide();
-      });
-
-      document.getElementById("clearApiKeyButton")?.addEventListener("click", () => {
-        if (!apiKeyHiddenField || !apiKeyInput) return;
-        apiKeyInput.value = "";
-        apiKeyHiddenField.value = "";
-      });
-
-      apiKeyModalEl?.addEventListener("shown.bs.modal", () => {
-        if (!apiKeyInput) return;
-        apiKeyInput.value = apiKeyHiddenField?.value || "";
-        apiKeyInput.focus();
       });
 
       document.getElementById("savePromptButton")?.addEventListener("click", () => {
