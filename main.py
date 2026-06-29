@@ -27,13 +27,10 @@ PROVIDER_OPTIONS = [
 
 MODEL_OPTIONS = {
     "gemini": [
-        ("gemini-3-flash-preview", "gemini-3-flash-preview (NEW)"),
-        ("gemini-3-pro-preview", "gemini-3-pro-preview (NEW)"),
-        ("gemini-2.5-flash", "gemini-2.5-flash"),
+        ("gemini-3-flash-preview", "gemini-3-flash-preview"),
     ],
     "ollama": [
         ("gemma4:31b", "gemma4:31b"),
-        ("gemma3:27b", "gemma3:27b"),
     ],
 }
 
