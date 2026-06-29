@@ -20,26 +20,33 @@ LANG_OPTIONS = [
     ("ch", "中國語"),
 ]
 
-MODEL_OPTIONS = [
-    ("gemini-3-flash-preview", "gemini-3-flash-preview (NEW)"),
-    ("gemini-3-pro-preview", "gemini-3-pro-preview (NEW)"),
-    ("gemini-2.5-flash", "gemini-2.5-flash"),
+PROVIDER_OPTIONS = [
+    ("gemini", "Google Gemini"),
+    ("ollama", "Ollama Cloud"),
 ]
+
+MODEL_OPTIONS = {
+    "gemini": [
+        ("gemini-3-flash-preview", "gemini-3-flash-preview (NEW)"),
+        ("gemini-3-pro-preview", "gemini-3-pro-preview (NEW)"),
+        ("gemini-2.5-flash", "gemini-2.5-flash"),
+    ],
+    "ollama": [
+        ("gemma4:31b", "gemma4:31b"),
+        ("gemma3:27b", "gemma3:27b"),
+    ],
+}
 
 THINKING_LEVEL_OPTIONS = [
     ("minimal", "MInimal"),
     ("low", "Low"),
     ("high", "High"),
 ]
-DEFAULT_MODEL = MODEL_OPTIONS[0][0]
+DEFAULT_PROVIDER = PROVIDER_OPTIONS[0][0]
+DEFAULT_MODEL = MODEL_OPTIONS[DEFAULT_PROVIDER][0][0]
 DEFAULT_LEVEL = THINKING_LEVEL_OPTIONS[0][0]
 
-translator = None
-translator_init_error = None
-try:
-    translator = create_translator(default_model=DEFAULT_MODEL)
-except TranslationError as exc:
-    translator_init_error = str(exc)
+translator = create_translator()
 
 
 def _get_app_password() -> str:
@@ -78,7 +85,11 @@ def login():
             session["password_authenticated"] = True
             next_url = request.args.get("next") or url_for("index")
             return redirect(next_url)
-        auth_error = "비밀번호가 올바르지 않습니다." if submitted_password else "비밀번호를 입력해주세요."
+        auth_error = (
+            "비밀번호가 올바르지 않습니다."
+            if submitted_password
+            else "비밀번호를 입력해주세요."
+        )
 
     if not password_required:
         return redirect(url_for("index"))
@@ -93,12 +104,24 @@ def login():
     )
 
 
-def translate_text(text: str, source: str, target: str, model: str, level: str, prompt_template: str) -> str:
-    if translator is None:
-        raise TranslationError(
-            translator_init_error or "번역기를 초기화하지 못했습니다. 환경변수를 확인해주세요."
-        )
-    return translator.translate(text, source, target, model=model, level=level, prompt_template=prompt_template)
+def translate_text(
+    text: str,
+    source: str,
+    target: str,
+    provider: str,
+    model: str,
+    level: str,
+    prompt_template: str,
+) -> str:
+    return translator.translate(
+        text,
+        source,
+        target,
+        provider=provider,
+        model=model,
+        level=level,
+        prompt_template=prompt_template,
+    )
 
 
 @app.route("/", methods=["GET", "POST"])
@@ -106,11 +129,12 @@ def index():
     password_required = bool(_get_app_password())
     password_authenticated = _is_password_authenticated()
     translation = None
-    error = translator_init_error
+    error = None
     text = ""
     source_language = "ko"
     target_language = "en"
     target_label = "English"
+    provider = DEFAULT_PROVIDER
     model = DEFAULT_MODEL
     level = DEFAULT_LEVEL
     prompt_template = DEFAULT_PROMPT_TEMPLATE
@@ -123,18 +147,29 @@ def index():
         text = request.form.get("text", "").strip()
         source_language = request.form.get("source_language", source_language)
         target_language = request.form.get("target_language", target_language)
-        model = request.form.get("model", model)
-        level = request.form.get("level", level)
-        prompt_template = request.form.get("prompt_template", "").strip() or DEFAULT_PROMPT_TEMPLATE
+        provider = request.form.get("provider", provider)
+        if provider not in dict(PROVIDER_OPTIONS):
+            provider = DEFAULT_PROVIDER
 
-        if model not in dict(MODEL_OPTIONS):
-            model = DEFAULT_MODEL
+        model = request.form.get("model", MODEL_OPTIONS[provider][0][0])
+        level = request.form.get("level", level)
+        prompt_template = (
+            request.form.get("prompt_template", "").strip()
+            or DEFAULT_PROMPT_TEMPLATE
+        )
+
+        if model not in dict(MODEL_OPTIONS[provider]):
+            model = MODEL_OPTIONS[provider][0][0]
 
         if not text:
             error = "번역할 내용을 입력해주세요."
         elif source_language == target_language:
             error = "출발어와 도착어가 동일합니다."
-        elif level == "minimal" and model == "gemini-3-pro-preview":
+        elif (
+            provider == "gemini"
+            and level == "minimal"
+            and model == "gemini-3-pro-preview"
+        ):
             error = "Gemini 3 Pro 모델은 Minimal을 지원하지 않습니다."
 
         else:
@@ -143,6 +178,7 @@ def index():
                     text,
                     source_language,
                     target_language,
+                    provider=provider,
                     model=model,
                     level=level,
                     prompt_template=prompt_template,
@@ -150,7 +186,10 @@ def index():
             except TranslationError as exc:
                 error = str(exc)
 
-    target_label = next((label for code, label in LANG_OPTIONS if code == target_language), target_language)
+    target_label = next(
+        (label for code, label in LANG_OPTIONS if code == target_language),
+        target_language,
+    )
 
     return render_template(
         "index.html",
@@ -161,9 +200,15 @@ def index():
         target_language=target_language,
         target_label=target_label,
         languages=LANG_OPTIONS,
+        provider=provider,
         model=model,
         level=level,
-        model_options=MODEL_OPTIONS,
+        provider_options=PROVIDER_OPTIONS,
+        model_options=[
+            (provider_code, code, label)
+            for provider_code, models in MODEL_OPTIONS.items()
+            for code, label in models
+        ],
         thinking_level_options=THINKING_LEVEL_OPTIONS,
         prompt_template=prompt_template,
         password_required=password_required,

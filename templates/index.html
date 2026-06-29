@@ -117,23 +117,34 @@
           {% endif %}
 
           <div class="row g-3 mt-3 align-items-center">
-
-              <div class="col input-group mb-2">
-                <label class="input-group-text" for="model">모델</label>
-                <select class="form-select" id="model" name="model">
-                  {% for code, label in model_options %}
-                  <option value="{{ code }}" {% if code == model %}selected{% endif %}>{{ label }}</option>
-                  {% endfor %}
-                </select>
-              </div>
-              <div class="col input-group mb-2">
-                <label class="input-group-text" for="select-thinking-level">사고 수준</label>
-                <select class="form-select" id="select-thinking-level" name="level">
-                  {% for code, label in thinking_level_options %}
-                  <option value="{{ code }}" {% if code == level %}selected{% endif %}>{{ label }}</option>
-                  {% endfor %}
-                </select>
-              </div>
+            <div class="col input-group mb-2">
+              <label class="input-group-text" for="provider">공급자</label>
+              <select class="form-select" id="provider" name="provider">
+                {% for code, label in provider_options %}
+                <option value="{{ code }}" {% if code == provider %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col input-group mb-2">
+              <label class="input-group-text" for="model">모델</label>
+              <select class="form-select" id="model" name="model">
+                {% for provider_code, code, label in model_options %}
+                <option
+                  value="{{ code }}"
+                  data-provider="{{ provider_code }}"
+                  {% if code == model and provider_code == provider %}selected{% endif %}
+                >{{ label }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col input-group mb-2" id="thinking-level-group">
+              <label class="input-group-text" for="select-thinking-level">사고 수준</label>
+              <select class="form-select" id="select-thinking-level" name="level">
+                {% for code, label in thinking_level_options %}
+                <option value="{{ code }}" {% if code == level %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+              </select>
+            </div>
             <div class="col-auto d-flex gap-2 align-items-center">
               <input
                 type="checkbox"
@@ -202,6 +213,38 @@
       const PROMPT_STORAGE_KEY = "milkyTranslator.promptTemplate";
 
       const translateButton = document.getElementById("transrate-btn");
+      const providerSelect = document.getElementById("provider");
+      const modelSelect = document.getElementById("model");
+      const thinkingLevelGroup = document.getElementById("thinking-level-group");
+      const thinkingLevelSelect = document.getElementById("select-thinking-level");
+
+      const syncProviderControls = () => {
+        if (!providerSelect || !modelSelect) return;
+
+        const provider = providerSelect.value;
+        const modelOptions = Array.from(modelSelect.options);
+        const matchingOptions = modelOptions.filter(
+          (option) => option.dataset.provider === provider,
+        );
+
+        modelOptions.forEach((option) => {
+          const matchesProvider = option.dataset.provider === provider;
+          option.hidden = !matchesProvider;
+          option.disabled = !matchesProvider;
+        });
+
+        if (modelSelect.selectedOptions[0]?.dataset.provider !== provider) {
+          matchingOptions[0]?.removeAttribute("disabled");
+          if (matchingOptions[0]) matchingOptions[0].selected = true;
+        }
+
+        const usesThinkingLevel = provider === "gemini";
+        if (thinkingLevelGroup) thinkingLevelGroup.hidden = !usesThinkingLevel;
+        if (thinkingLevelSelect) thinkingLevelSelect.disabled = !usesThinkingLevel;
+      };
+
+      providerSelect?.addEventListener("change", syncProviderControls);
+      syncProviderControls();
 
       const setPromptTemplateValue = (value) => {
         if (promptHiddenField) {
